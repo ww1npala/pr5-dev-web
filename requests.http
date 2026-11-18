@@ -1,0 +1,45 @@
+@baseUrl = http://localhost:3000
+
+### 1. Отримати список усіх зоотоварів (включно з початковими з OnModuleInit)
+GET {{baseUrl}}/pet-supplies
+Accept: application/json
+
+### 2. Створити новий зоотовар та перевірити автоматичну генерацію поля slug
+POST {{baseUrl}}/pet-supplies
+Content-Type: application/json
+
+{
+  "title": "Кігтеточка-стовпчик Trixie для котів",
+  "category": "Аксесуари",
+  "petType": "Коти",
+  "price": 850,
+  "stock": 10
+}
+
+### 3. Повторний GET /pet-supplies (перевірка нового requestId та доданого товару)
+GET {{baseUrl}}/pet-supplies
+Accept: application/json
+
+### 4. Створити замовлення з дійсним productId (розрахунок вартості + 20% податку через FEE_CALCULATOR)
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "productId": "pet-1",
+  "quantity": 2,
+  "customerEmail": "tarnovskyi.artur@student.edu.ua"
+}
+
+### 5. Створити замовлення з неіснуючим productId (очікується 404 Not Found)
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "productId": "pet-999",
+  "quantity": 1,
+  "customerEmail": "tarnovskyi.artur@student.edu.ua"
+}
+
+### 6. Отримати список усіх оформлених замовлень
+GET {{baseUrl}}/orders
+Accept: application/json
