@@ -20,7 +20,8 @@ import { OrderEntity } from './entities/order.entity';
 @Injectable()
 export class OrdersService implements OnModuleInit {
   private readonly logger = new Logger(OrdersService.name);
-  private readonly orders: OrderEntity[] = [];
+  private static readonly orders: OrderEntity[] = [];
+  private static isInitialized = false;
 
   constructor(
     private readonly petSuppliesService: PetSuppliesService,
@@ -30,6 +31,10 @@ export class OrdersService implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
+    if (OrdersService.isInitialized) {
+      return;
+    }
+    OrdersService.isInitialized = true;
     this.logger.log(
       `Сервіс замовлень успішно підключено до білінгу та каталогу (${this.storeConfig.storeName}).`,
     );
@@ -76,19 +81,19 @@ export class OrdersService implements OnModuleInit {
       createdAt: new Date().toISOString(),
     };
 
-    this.orders.push(order);
+    OrdersService.orders.push(order);
     return order;
   }
 
   findAll(): OrderEntity[] {
     this.logger.log(
-      `[${this.requestIdService.requestId}] Запит списку замовлень (${this.orders.length} шт.)`,
+      `[${this.requestIdService.requestId}] Запит списку замовлень (${OrdersService.orders.length} шт.)`,
     );
-    return this.orders;
+    return OrdersService.orders;
   }
 
   findOne(orderId: string): OrderEntity {
-    const order = this.orders.find((o) => o.orderId === orderId);
+    const order = OrdersService.orders.find((o) => o.orderId === orderId);
     if (!order) {
       throw new NotFoundException(`Замовлення з ID "${orderId}" не знайдено`);
     }

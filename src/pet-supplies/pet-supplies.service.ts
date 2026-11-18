@@ -13,8 +13,9 @@ import { RequestIdService } from '../shared/request-id/request-id.service';
 @Injectable()
 export class PetSuppliesService implements OnModuleInit {
   private readonly logger = new Logger(PetSuppliesService.name);
-  private readonly items: PetSupplyEntity[] = [];
-  private idCounter = 1;
+  private static readonly items: PetSupplyEntity[] = [];
+  private static idCounter = 1;
+  private static isSeeded = false;
 
   constructor(
     private readonly slugService: SlugService,
@@ -22,6 +23,10 @@ export class PetSuppliesService implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
+    if (PetSuppliesService.isSeeded) {
+      return;
+    }
+
     const initialSupplies: CreatePetSupplyDto[] = [
       {
         title: 'Сухий корм Royal Canin для котів 2 кг',
@@ -41,7 +46,7 @@ export class PetSuppliesService implements OnModuleInit {
 
     initialSupplies.forEach((dto) => {
       const entity: PetSupplyEntity = {
-        id: `pet-${this.idCounter++}`,
+        id: `pet-${PetSuppliesService.idCounter++}`,
         title: dto.title,
         slug: this.slugService.generateSlug(dto.title),
         category: dto.category,
@@ -50,9 +55,10 @@ export class PetSuppliesService implements OnModuleInit {
         stock: dto.stock,
         createdAt: new Date().toISOString(),
       };
-      this.items.push(entity);
+      PetSuppliesService.items.push(entity);
     });
 
+    PetSuppliesService.isSeeded = true;
     this.logger.log(
       'Ініціалізація модуля завершена. Завантажено початкові тестові дані.',
     );
@@ -64,7 +70,7 @@ export class PetSuppliesService implements OnModuleInit {
     );
 
     const newItem: PetSupplyEntity = {
-      id: `pet-${this.idCounter++}`,
+      id: `pet-${PetSuppliesService.idCounter++}`,
       title: dto.title,
       slug: this.slugService.generateSlug(dto.title),
       category: dto.category,
@@ -74,19 +80,19 @@ export class PetSuppliesService implements OnModuleInit {
       createdAt: new Date().toISOString(),
     };
 
-    this.items.push(newItem);
+    PetSuppliesService.items.push(newItem);
     return newItem;
   }
 
   findAll(): PetSupplyEntity[] {
     this.logger.log(
-      `[${this.requestIdService.requestId}] Отримання списку всіх зоотоварів (${this.items.length} шт.)`,
+      `[${this.requestIdService.requestId}] Отримання списку всіх зоотоварів (${PetSuppliesService.items.length} шт.)`,
     );
-    return this.items;
+    return PetSuppliesService.items;
   }
 
   findOne(id: string): PetSupplyEntity | undefined {
-    return this.items.find((item) => item.id === id);
+    return PetSuppliesService.items.find((item) => item.id === id);
   }
 
   findOneOrThrow(id: string): PetSupplyEntity {
@@ -113,11 +119,11 @@ export class PetSuppliesService implements OnModuleInit {
   }
 
   remove(id: string): { deleted: boolean; id: string } {
-    const index = this.items.findIndex((item) => item.id === id);
+    const index = PetSuppliesService.items.findIndex((item) => item.id === id);
     if (index === -1) {
       throw new NotFoundException(`Зоотовар з ідентифікатором "${id}" не знайдено`);
     }
-    this.items.splice(index, 1);
+    PetSuppliesService.items.splice(index, 1);
     return { deleted: true, id };
   }
 }
